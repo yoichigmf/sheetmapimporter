@@ -205,7 +205,10 @@ class SheetMapImporter:
              QgsMessageLog.logMessage("SheetmapImporter  set UR ", 'SheetmapImporter', level=Qgis.Info)
 
 
-             response = urllib.request.urlopen(tgUrl)
+             nUrl = tgUrl + "/getLayerSetting.php"
+             QgsMessageLog.logMessage("SheetmapImporter  set NUR " + nUrl, 'SheetmapImporter', level=Qgis.Info)
+
+             response = urllib.request.urlopen(nUrl)
              content = response.read()
              #cjson = content.decode()
              nj = json.loads(content)
@@ -222,14 +225,16 @@ class SheetMapImporter:
 
 
              self.dlg.tableInfo.setRowCount( bsize + osize)
-             self.dlg.tableInfo.setColumnCount(3)
-             header = ['分類', '名前', '種別']
+             self.dlg.tableInfo.setColumnCount(5)
+             header = ['分類', '名前', '種別','URL', 'クレジット']
              self.dlg.tableInfo.setHorizontalHeaderLabels(header)
              count = 0
              for  bs in baselayers:
                    self.dlg.tableInfo.setItem( count, 0 ,  QTableWidgetItem("背景図"))
                    self.dlg.tableInfo.setItem( count, 1 ,  QTableWidgetItem(bs["name"]))
                    self.dlg.tableInfo.setItem( count, 2 ,  QTableWidgetItem(bs["kind"]))
+                   self.dlg.tableInfo.setItem( count, 3 ,  QTableWidgetItem(bs["url"]))
+                   self.dlg.tableInfo.setItem( count, 4 ,  QTableWidgetItem(bs["attribute"]))
                    QgsMessageLog.logMessage("SheetmapImporter  bs "+bs["name"] + " "+ str(count), 'SheetmapImporter', level=Qgis.Info)
                    count += 1
 
@@ -237,6 +242,9 @@ class SheetMapImporter:
                    self.dlg.tableInfo.setItem( count, 0 ,  QTableWidgetItem("重ねあわせ図"))
                    self.dlg.tableInfo.setItem( count, 1 , QTableWidgetItem(ov["name"]))
                    self.dlg.tableInfo.setItem( count, 2 ,  QTableWidgetItem(ov["kind"]))
+                   self.dlg.tableInfo.setItem( count, 3 ,  QTableWidgetItem(ov["url"]))
+                   self.dlg.tableInfo.setItem( count, 4 ,  QTableWidgetItem(ov["attribute"]))
+
                    QgsMessageLog.logMessage("SheetmapImporter  ov "+ov["name"]+ " "+ str(count), 'SheetmapImporter', level=Qgis.Info)
 
                    count += 1
