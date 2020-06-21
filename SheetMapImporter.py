@@ -203,6 +203,8 @@ class SheetMapImporter:
 
         else:
              QgsMessageLog.logMessage("SheetmapImporter  set UR ", 'SheetmapImporter', level=Qgis.Info)
+
+
              response = urllib.request.urlopen(tgUrl)
              content = response.read()
              #cjson = content.decode()
