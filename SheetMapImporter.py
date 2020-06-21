@@ -22,15 +22,28 @@
  ***************************************************************************/
 """
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
-from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QAction
+from qgis.PyQt.QtGui import *
+from qgis.PyQt.QtWidgets import *
+#from PyQt5.QtWidgets import *
+
+
+from qgis.core import (
+    QgsMessageLog,
+    QgsGeometry,
+     Qgis,
+)
+
+from qgis.gui import (
+    QgsMessageBar,
+)
 
 # Initialize Qt resources from file resources.py
 from .resources import *
 # Import the code for the dialog
 from .SheetMapImporter_dialog import SheetMapImporterDialog
 import os.path
-
+import urllib
+import json
 
 class SheetMapImporter:
     """QGIS Plugin Implementation."""
@@ -179,6 +192,52 @@ class SheetMapImporter:
                 action)
             self.iface.removeToolBarIcon(action)
 
+    def  rdButtonClicked(self):
+
+        tgUrl = self.dlg.lineEditURL.text()
+
+
+        if  not tgUrl:
+
+             QgsMessageLog.logMessage("SheetmapImporter  Not set URL...", 'SheetmapImporter', level=Qgis.Info)
+
+        else:
+             QgsMessageLog.logMessage("SheetmapImporter  set UR ", 'SheetmapImporter', level=Qgis.Info)
+             response = urllib.request.urlopen(tgUrl)
+             content = response.read()
+             #cjson = content.decode()
+             nj = json.loads(content)
+
+             baselayers = nj["baselayers"]
+             overlaylayers = nj["overlaylayers"]
+
+             bsize = len(baselayers)
+             osize = len(overlaylayers)
+
+             self.dlg.tableInfo.clear()
+
+
+
+
+             self.dlg.tableInfo.setRowCount( bsize + osize)
+             self.dlg.tableInfo.setColumnCount(3)
+             header = ['分類', '名前', '種別']
+             self.dlg.tableInfo.setHorizontalHeaderLabels(header)
+             count = 0
+             for  bs in baselayers:
+                   self.dlg.tableInfo.setItem( count, 0 ,  QTableWidgetItem("背景図"))
+                   self.dlg.tableInfo.setItem( count, 1 ,  QTableWidgetItem(bs["name"]))
+                   self.dlg.tableInfo.setItem( count, 2 ,  QTableWidgetItem(bs["kind"]))
+                   QgsMessageLog.logMessage("SheetmapImporter  bs "+bs["name"] + " "+ str(count), 'SheetmapImporter', level=Qgis.Info)
+                   count += 1
+
+             for  ov in overlaylayers:
+                   self.dlg.tableInfo.setItem( count, 0 ,  QTableWidgetItem("重ねあわせ図"))
+                   self.dlg.tableInfo.setItem( count, 1 , QTableWidgetItem(ov["name"]))
+                   self.dlg.tableInfo.setItem( count, 2 ,  QTableWidgetItem(ov["kind"]))
+                   QgsMessageLog.logMessage("SheetmapImporter  ov "+ov["name"]+ " "+ str(count), 'SheetmapImporter', level=Qgis.Info)
+
+                   count += 1
 
     def run(self):
         """Run method that performs all the real work"""
@@ -189,6 +248,8 @@ class SheetMapImporter:
             self.first_start = False
             self.dlg = SheetMapImporterDialog()
 
+            #     ボタンにアクションをつける
+        self.dlg.pushButtonRD.clicked.connect(self.rdButtonClicked)
         # show the dialog
         self.dlg.show()
         # Run the dialog event loop
